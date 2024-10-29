@@ -287,6 +287,9 @@ public class MainActivity extends FlutterActivity {
                             break;
 
                         case "initiateCall":
+
+                            String contactNumber = call.argument("contactNumber");
+                            calle = contactNumber;
                             //start the call
                             callId = csCall.startPstnCall(calle,caller, "HI",new CSLocation(17.4507,78.3814,"Cyber Towers"));
                             Log.i(TAG, "pstnResp Call id : " + callId);

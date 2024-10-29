@@ -145,7 +145,7 @@ class _CallScreenState extends State<HomeScreen> {
                 ),
 
                 ElevatedButton(
-                  onPressed: (){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen()));},
+                  onPressed: (){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: "+916301450563")));},
                   child: Text("Click to Call "),
                 ),
 

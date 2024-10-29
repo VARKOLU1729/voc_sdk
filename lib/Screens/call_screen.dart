@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CallScreen extends StatefulWidget {
-  const CallScreen({super.key});
+  final String contactNumber;
+  const CallScreen({super.key, required this.contactNumber});
 
   @override
   State<CallScreen> createState() => _CallScreenState();
@@ -18,7 +19,7 @@ class _CallScreenState extends State<CallScreen> {
 
   void initiateCall() async
   {
-    String x = await platform.invokeMethod('initiateCall');
+    String x = await platform.invokeMethod('initiateCall', {'contactNumber' : widget.contactNumber});
     setState(() {
       calleName = x;
     });
@@ -31,19 +32,19 @@ class _CallScreenState extends State<CallScreen> {
 
   void holdCall() async
   {
-    await platform.invokeMethod('holdCall', {'onHold':callOnHold});
     setState(() {
       callOnHold = !callOnHold;
       print(callOnHold);
     });
+    await platform.invokeMethod('holdCall', {'onHold':callOnHold});
   }
 
   void muteCall() async
   {
-    await platform.invokeMethod('muteCall', {'onMute':callOnMute});
     setState(() {
       callOnMute = !callOnMute;
     });
+    await platform.invokeMethod('muteCall', {'onMute':callOnMute});
   }
 
   void recordCall() async
@@ -79,6 +80,8 @@ class _CallScreenState extends State<CallScreen> {
           ),
 
           Text(calleName, style: TextStyle(color: Colors.black87, fontSize: 30),),
+
+          Text(widget.contactNumber, style: TextStyle(color: Colors.black87, fontSize: 30),),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,

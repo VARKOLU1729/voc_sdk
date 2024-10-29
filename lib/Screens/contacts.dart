@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:voc_sdk/Screens/call_screen.dart';
 
 class Contacts extends StatefulWidget {
   const Contacts({super.key});
@@ -59,15 +60,28 @@ class _ContactsState extends State<Contacts> {
                 return Card(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
-                    child: RichText(
-                        text:TextSpan(
-                          style: TextStyle(color: Colors.black87),
-                          children: [
-                            TextSpan(text: contactsName[index]),
-                            TextSpan(text: '\n'),
-                            TextSpan(text: contactsNumber[index])
-                          ]
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        RichText(
+                            text:TextSpan(
+                              style: TextStyle(color: Colors.black87),
+                              children: [
+                                TextSpan(text: contactsName[index]),
+                                TextSpan(text: '\n'),
+                                TextSpan(text: contactsNumber[index])
+                              ]
+                            )
+                        ),
+
+                        IconButton(
+                            onPressed: (){
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: contactsNumber[index])));
+                              CallScreen(contactNumber: contactsNumber[index],);
+                            },
+                            icon: Icon(Icons.wifi_calling)
                         )
+                      ],
                     ),
                   ),
                 );
