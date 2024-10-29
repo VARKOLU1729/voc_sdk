@@ -71,11 +71,11 @@ class _CallScreenState extends State<CallScreen> {
         children: [
 
           Container(
-            height: 40,
-            width: 40,
+            height: 100,
+            width: 100,
             color: Colors.grey,
             child: ClipOval(
-              child: Icon(Icons.person),
+              child: Icon(Icons.person, size: 60,),
             ),
           ),
 

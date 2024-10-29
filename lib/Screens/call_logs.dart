@@ -27,6 +27,15 @@ class _CallLogsState extends State<CallLogs> {
     });
   }
 
+  bool checkCallType( String callType)
+  {
+    if(callType == "OUTGOING PSTN CALL")
+      {
+        return true;
+      }
+    else return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -45,22 +54,28 @@ class _CallLogsState extends State<CallLogs> {
             return Card(
               child: Padding(
                 padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
-                child: RichText(
-                    text:TextSpan(
-                        style: TextStyle(color: Colors.black87),
-                        children: [
-                          TextSpan(text: callLogs[index][0]),
-                          TextSpan(text: '\n'),
-                          TextSpan(text: callLogs[index][1]),
-                          TextSpan(text: '\n'),
-                          TextSpan(text: callLogs[index][2]),
-                          TextSpan(text: '\n'),
-                          TextSpan(text: callLogs[index][3]),
-                          TextSpan(text: '   '),
-                          TextSpan(text: callLogs[index][4]),
-                        ]
-                    )
-                ),
+                child: ListTile(
+                  leading: Icon(
+                      checkCallType(callLogs[index][2]) ? Icons.call_made : Icons.call_received,
+                    color: checkCallType(callLogs[index][2]) ? Colors.red: Colors.blue,
+                  ),
+                  title: RichText(
+                      text:TextSpan(
+                          style: TextStyle(color: Colors.black87),
+                          children: [
+                            TextSpan(text: callLogs[index][0]),
+                            TextSpan(text: '\n'),
+                            TextSpan(text: callLogs[index][1]),
+                            TextSpan(text: '\n'),
+                            // TextSpan(text: callLogs[index][2]),
+                            TextSpan(text: '\n'),
+                            TextSpan(text: callLogs[index][3]),
+                            TextSpan(text: '   '),
+                            TextSpan(text: callLogs[index][4]),
+                          ]
+                      )
+                  ),
+                )
               ),
             );
           }
