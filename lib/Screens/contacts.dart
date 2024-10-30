@@ -59,6 +59,7 @@ class _ContactsState extends State<Contacts> {
     getContacts();
   }
 
+  
 
   @override
   Widget build(BuildContext context) {

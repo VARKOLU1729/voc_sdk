@@ -14,6 +14,7 @@ class _CallLogsState extends State<CallLogs> {
 
   static const platform = MethodChannel('VOICECALL');
   List<dynamic> callIds = [];
+  int curTime = 0;
 
   List<List<dynamic>> callLogs = [];
 
@@ -38,6 +39,15 @@ class _CallLogsState extends State<CallLogs> {
       getCallLogs();
     });
   }
+  void getTime() async
+  {
+    dynamic x = await platform.invokeMethod('getTime');
+    print(x.runtimeType);
+    setState(() {
+      curTime = x;
+    });
+  }
+
 
 
   bool checkCallType( String callType)
@@ -53,6 +63,7 @@ class _CallLogsState extends State<CallLogs> {
   void initState() {
     super.initState();
     // getPSTNCallHistory();
+    getTime();
     getCallLogs();
   }
 
@@ -64,6 +75,29 @@ class _CallLogsState extends State<CallLogs> {
           itemCount: callLogs.length,
           itemBuilder: (context, index)
           {
+            int time = ((curTime - int.parse(callLogs[index][3]))/60000).truncate();
+            String msg = "mins ago";
+            if(time<60)
+              {
+                time = time;
+                msg = "mins ago";
+              }
+            else if(time>60 && time<1440)
+              {
+                time = time%60;
+                msg = "hours ago";
+              }
+            else if(time>1440 && time<2880)
+            {
+              time = -1;
+              msg = "Yesterday";
+            }
+            else
+              {
+                time = -1;
+                msg = "Long Back";
+              }
+            print(time);
             return Card(
               child: Padding(
                 padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
@@ -82,9 +116,9 @@ class _CallLogsState extends State<CallLogs> {
                             TextSpan(text: '\n'),
                             // TextSpan(text: callLogs[index][2]),
                             TextSpan(text: '\n'),
-                            TextSpan(text: callLogs[index][3]),
-                            TextSpan(text: '   '),
-                            TextSpan(text: callLogs[index][4]),
+                            time!=-1 ? TextSpan(text: "$time $msg") : TextSpan(text: "$msg"),
+                            TextSpan(text: ' \u2981 '),
+                            TextSpan(text: "${callLogs[index][4]} mins"),
                           ]
                       )
                   ),

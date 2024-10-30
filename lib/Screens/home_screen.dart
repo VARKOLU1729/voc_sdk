@@ -6,6 +6,7 @@ import 'package:voc_sdk/Screens/call_logs.dart';
 import 'package:voc_sdk/Screens/call_screen.dart';
 import 'package:voc_sdk/Screens/click_to_call.dart';
 
+import 'Profile.dart';
 import 'contacts.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -111,6 +112,14 @@ class _CallScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
+        actions: [
+          IconButton(
+              onPressed: (){
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Profile()));
+              },
+              icon: Icon(Icons.person,size: 30,),
+          )
+        ],
         title: Text('VoxValley'),
         centerTitle: true,
         backgroundColor: Colors.orange,

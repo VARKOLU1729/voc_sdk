@@ -264,6 +264,10 @@ public class MainActivity extends FlutterActivity {
                             csClient.addContacts(contactsList);
                             break;
 
+                        case "getTime":
+                            long curTime = csClient.getTime();
+                            result.success(curTime);
+
                         case "getContacts":
                             Log.i(TAG, "obtaining contacts....");
                             Cursor cfcc = CSDataProvider.getContactsCursor(); //ccfn - cursor for contact name
