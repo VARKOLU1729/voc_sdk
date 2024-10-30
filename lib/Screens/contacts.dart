@@ -17,6 +17,7 @@ class _ContactsState extends State<Contacts> {
   String contactsResult = "";
   List<String> contactsName = [];
   List<String> contactsNumber = [];
+  final formKey = GlobalKey<FormState>();
 
   void addToContacts({required String name, required String contact}) async
   {
@@ -33,16 +34,28 @@ class _ContactsState extends State<Contacts> {
         contactsName.add(value);
       });
     });
-
-
   }
+
+  void save()
+  {
+    if(formKey.currentState!.validate())
+      {
+        print("validation of contact $name$contact successful");
+        addToContacts(name: name, contact: contact);
+        setState(() {
+          contactsName = [];
+          contactsNumber = [];
+          getContacts();
+        });
+      }
+  }
+
 
 
   @override
   void initState()
   {
     super.initState();
-    // addToContacts(name:"Rishabh", contact:"+917078257578");
     getContacts();
   }
 
@@ -99,15 +112,55 @@ class _ContactsState extends State<Contacts> {
                     builder: (context)
                     {
                       return AlertDialog(
-                        content: Text("Hi"),
+                        content: Form(
+                          key: formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextFormField(
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                  label: Text("Mobile Number")
+                                ),
+                                validator:(val){
+                                  if(val!.length<10)
+                                    {
+                                      return "Mobile number has to be 10 digits";
+                                    }
+                                  return null;
+                                },
+                                onChanged: (val){
+                                  contact = "+91$val";
+                                },
+                              ),
+
+                              SizedBox(height: 10,),
+
+                              TextFormField(
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  label: Text("Name")
+                                ),
+                                onChanged: (val){
+                                  name = val;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                         actionsAlignment: MainAxisAlignment.spaceBetween,
                         actions: [
                           FilledButton(
-                              onPressed: (){},
+                              onPressed: (){
+                                Navigator.pop(context);
+                              },
                               child: Text("Close")
                           ),
                           FilledButton(
-                              onPressed: (){},
+                              onPressed: (){
+                                save();
+                                Navigator.pop(context);
+                              },
                               child: Text("Save")
                           )
                         ],

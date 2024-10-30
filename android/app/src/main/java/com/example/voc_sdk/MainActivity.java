@@ -189,10 +189,10 @@ public class MainActivity extends FlutterActivity {
                     switch (method)
                     {
                         case "deleteCallLog":
-                            Log.i(TAG,"call Log deleting...");
                             String callIdToDelete = call.argument("callId");
                             Log.i(TAG,"call Log deleting..."+callIdToDelete);
                             CSDataProvider.deleteCallLogByFilter(CSDbFields.KEY_CALLLOG_CALLID, callIdToDelete);
+                            result.success("deleted log");
                             break;
 
                         case "holdCall":

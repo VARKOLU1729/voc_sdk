@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:stop_watch_timer/stop_watch_timer.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -16,6 +19,10 @@ class _CallScreenState extends State<CallScreen> {
   bool callOnHold = false;
   bool callOnMute = false;
   bool callRecord = false;
+
+  StopWatchTimer timer = StopWatchTimer(
+                    mode: StopWatchMode.countUp
+                  );
 
   void initiateCall() async
   {
@@ -58,6 +65,7 @@ class _CallScreenState extends State<CallScreen> {
   {
     super.initState();
     initiateCall();
+    timer.onStartTimer();
   }
 
 
@@ -90,10 +98,20 @@ class _CallScreenState extends State<CallScreen> {
 
           Text(widget.contactNumber, style: TextStyle(color: Colors.black87, fontSize: 25),),
 
-          // StreamBuilder(
-          //     stream: Timer,
-          //     builder: builder
-          // ),
+          StreamBuilder(
+              stream: timer.rawTime,
+              builder:(context, snapshot)
+              {
+                if(snapshot.hasData)
+                  {
+                    final val = snapshot.data;
+                    final displayTime = StopWatchTimer.getDisplayTime(val!);
+                    
+                    return Text("${displayTime.substring(3,8)}");
+                  }
+                return Text("Timer");
+              }
+          ),
 
           Spacer(flex: 3,),
 

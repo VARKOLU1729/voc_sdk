@@ -31,8 +31,7 @@ class _CallLogsState extends State<CallLogs> {
 
   void deleteCallLog({required String callId}) async
   {
-    await platform.invokeMethod('deleteCallLog', {'callId' : callId});
-    print("call log del");
+    String x = await platform.invokeMethod('deleteCallLog', {'callId' : callId});
     setState(() {
       callIds = [];
       callLogs = [];
