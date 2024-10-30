@@ -13,6 +13,7 @@ class CallLogs extends StatefulWidget {
 class _CallLogsState extends State<CallLogs> {
 
   static const platform = MethodChannel('VOICECALL');
+  List<dynamic> callIds = [];
 
   List<List<dynamic>> callLogs = [];
 
@@ -22,10 +23,23 @@ class _CallLogsState extends State<CallLogs> {
     print(x);
     setState(() {
       x.forEach((key, value) {
+        callIds.add(key);
         callLogs.add(value);
       });
     });
   }
+
+  void deleteCallLog({required String callId}) async
+  {
+    await platform.invokeMethod('deleteCallLog', {'callId' : callId});
+    print("call log del");
+    setState(() {
+      callIds = [];
+      callLogs = [];
+      getCallLogs();
+    });
+  }
+
 
   bool checkCallType( String callType)
   {
@@ -74,6 +88,14 @@ class _CallLogsState extends State<CallLogs> {
                             TextSpan(text: callLogs[index][4]),
                           ]
                       )
+                  ),
+                  trailing: IconButton(
+                      onPressed: (){
+                        print('del');
+                        print(callIds[index]);
+                        deleteCallLog(callId : callIds[index]);
+                      },
+                      icon:Icon(Icons.delete)
                   ),
                 )
               ),

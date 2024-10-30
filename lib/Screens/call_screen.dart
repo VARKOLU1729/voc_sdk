@@ -70,18 +70,32 @@ class _CallScreenState extends State<CallScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
 
+          Spacer(flex: 1,),
           Container(
             height: 100,
             width: 100,
-            color: Colors.grey,
+            // color: Colors.grey,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey.withOpacity(0.5)
+            ),
             child: ClipOval(
               child: Icon(Icons.person, size: 60,),
             ),
           ),
 
+          SizedBox(height: 10,),
+
           Text(calleName, style: TextStyle(color: Colors.black87, fontSize: 30),),
 
-          Text(widget.contactNumber, style: TextStyle(color: Colors.black87, fontSize: 30),),
+          Text(widget.contactNumber, style: TextStyle(color: Colors.black87, fontSize: 25),),
+
+          // StreamBuilder(
+          //     stream: Timer,
+          //     builder: builder
+          // ),
+
+          Spacer(flex: 3,),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -98,6 +112,8 @@ class _CallScreenState extends State<CallScreen> {
             ],
           ),
 
+          Spacer(flex: 1,),
+
           FloatingActionButton(
             heroTag: "1",
             onPressed:(){
@@ -107,6 +123,8 @@ class _CallScreenState extends State<CallScreen> {
             child: Icon(Icons.call),
             backgroundColor: Colors.red,
           ),
+
+          Spacer(flex: 1,),
         ],
       ),
     );

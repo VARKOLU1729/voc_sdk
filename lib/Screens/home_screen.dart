@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:voc_sdk/Screens/call_logs.dart';
 import 'package:voc_sdk/Screens/call_screen.dart';
+import 'package:voc_sdk/Screens/click_to_call.dart';
 
 import 'contacts.dart';
 
@@ -18,6 +19,8 @@ class _CallScreenState extends State<HomeScreen> {
   String user = "No User";
   static const platform = MethodChannel('VOICECALL');
   bool _isLoading = true; // Loading state
+  int selectedIndex = 0;
+  List<Widget> tabs  = [ClickToCall(),CallLogs(), Contacts()];
 
   Future<http.Response> signUpNewUser({required String userName, required String password}) async {
     final url = Uri.parse('https://proxy.vox-cpaas.com/api/user');
@@ -95,6 +98,7 @@ class _CallScreenState extends State<HomeScreen> {
   }
 
 
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +107,7 @@ class _CallScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.black87,
       appBar: AppBar(
@@ -110,56 +115,81 @@ class _CallScreenState extends State<HomeScreen> {
         centerTitle: true,
         backgroundColor: Colors.orange,
       ),
-      body: Center(
-        child: _isLoading
-            ? CircularProgressIndicator() // Show loading indicator
-            : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+      body:tabs[selectedIndex] ,
+      // body: Center(
+      //   child: _isLoading
+      //       ? CircularProgressIndicator() // Show loading indicator
+      //       : Column(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: <Widget>[
+      //
+      //       Text("Welcome $user", style: TextStyle(color: Colors.white)),
+      //
+      //       SizedBox(height: 40,),
+      //
+      //       ElevatedButton(
+      //         onPressed:(){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallLogs()));},
+      //         child: Text("Call History"),
+      //       ),
+      //
+      //       ElevatedButton(
+      //         onPressed:(){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Contacts()));},
+      //         child: Text("Contacts"),
+      //       ),
+      //
+      //       SizedBox(height: 40,),
+      //
+      //       Row(
+      //         mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //         children: [
+      //
+      //           FloatingActionButton(
+      //             heroTag: "2",
+      //               onPressed: answerCall,
+      //             child: Icon(Icons.call),
+      //             backgroundColor: Colors.green,
+      //           ),
+      //
+      //           ElevatedButton(
+      //             onPressed: (){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: "+916301450563")));},
+      //             child: Text("Click to Call "),
+      //           ),
+      //
+      //           FloatingActionButton(
+      //             heroTag: "1",
+      //               onPressed: endCall,
+      //             child: Icon(Icons.call),
+      //             backgroundColor: Colors.red,
+      //
+      //           ),
+      //         ],
+      //       )
+      //     ],
+      //   ),
+      // ),
 
-            Text("Welcome $user", style: TextStyle(color: Colors.white)),
-
-            SizedBox(height: 40,),
-
-            ElevatedButton(
-              onPressed:(){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallLogs()));},
-              child: Text("Call History"),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: selectedIndex,
+          onTap: (index){
+          setState(() {
+            selectedIndex = index;
+          });
+          },
+          items:
+          [
+            BottomNavigationBarItem(
+                icon: Icon(Icons.call),
+                label: 'Call'
             ),
-
-            ElevatedButton(
-              onPressed:(){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>Contacts()));},
-              child: Text("Contacts"),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.recent_actors_sharp),
+              label: 'Recents'
             ),
-
-            SizedBox(height: 40,),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-
-                FloatingActionButton(
-                  heroTag: "2",
-                    onPressed: answerCall,
-                  child: Icon(Icons.call),
-                  backgroundColor: Colors.green,
-                ),
-
-                ElevatedButton(
-                  onPressed: (){ Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: "+916301450563")));},
-                  child: Text("Click to Call "),
-                ),
-
-                FloatingActionButton(
-                  heroTag: "1",
-                    onPressed: endCall,
-                  child: Icon(Icons.call),
-                  backgroundColor: Colors.red,
-
-                ),
-              ],
-            )
-          ],
-        ),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.contacts),
+                label: 'Contacts'
+            ),
+          ]
       ),
     );
   }

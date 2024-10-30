@@ -53,39 +53,73 @@ class _ContactsState extends State<Contacts> {
 
       appBar: AppBar(title: const Text("Contacts")),
 
-      body: ListView.builder(
-        itemCount: contactsName.length,
-          itemBuilder: (context, index)
-              {
-                return Card(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        RichText(
-                            text:TextSpan(
-                              style: TextStyle(color: Colors.black87),
-                              children: [
-                                TextSpan(text: contactsName[index]),
-                                TextSpan(text: '\n'),
-                                TextSpan(text: contactsNumber[index])
-                              ]
-                            )
-                        ),
+      body: Stack(
+        children:[ ListView.builder(
+          itemCount: contactsName.length,
+            itemBuilder: (context, index)
+                {
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          RichText(
+                              text:TextSpan(
+                                style: TextStyle(color: Colors.black87),
+                                children: [
+                                  TextSpan(text: contactsName[index]),
+                                  TextSpan(text: '\n'),
+                                  TextSpan(text: contactsNumber[index])
+                                ]
+                              )
+                          ),
 
-                        IconButton(
-                            onPressed: (){
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: contactsNumber[index])));
-                              CallScreen(contactNumber: contactsNumber[index],);
-                            },
-                            icon: Icon(Icons.wifi_calling)
-                        )
-                      ],
+                          IconButton(
+                              onPressed: (){
+                                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: contactsNumber[index])));
+                                CallScreen(contactNumber: contactsNumber[index],);
+                              },
+                              icon: Icon(Icons.wifi_calling)
+                          )
+                        ],
+                      ),
                     ),
-                  ),
+                  );
+                }
+        ),
+
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: (){
+                showDialog(
+                    context: context,
+                    builder: (context)
+                    {
+                      return AlertDialog(
+                        content: Text("Hi"),
+                        actionsAlignment: MainAxisAlignment.spaceBetween,
+                        actions: [
+                          FilledButton(
+                              onPressed: (){},
+                              child: Text("Close")
+                          ),
+                          FilledButton(
+                              onPressed: (){},
+                              child: Text("Save")
+                          )
+                        ],
+
+                      );
+                    }
                 );
-              }
+              },
+              child: Icon(Icons.add_circle_rounded),
+            ),
+          )
+      ]
       ),
 
     );
