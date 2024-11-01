@@ -188,6 +188,16 @@ public class MainActivity extends FlutterActivity {
 
                     switch (method)
                     {
+                        case "getCurUser":
+                            Log.i(TAG, "getting current user login Id...");
+                            result.success(CSDataProvider.getLoginID());
+
+                        case "toggleLoudSpeaker":
+                            Log.i(TAG, "toggling loud speaker...");
+                            boolean onLoud = call.argument("onLoud");
+                            csCall.enableSpeaker(callId, !onLoud);
+                            break;
+
                         case "deleteCallLog":
                             String callIdToDelete = call.argument("callId");
                             Log.i(TAG,"call Log deleting..."+callIdToDelete);

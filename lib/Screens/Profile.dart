@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -10,7 +11,9 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
 
   final formKey = GlobalKey<FormState>();
+  static const platform = MethodChannel('VOICECALL');
   String contact = "";
+  String curUser = "Unknown";
   List<String> didNumbers = [];
   void save()
   {
@@ -20,6 +23,20 @@ class _ProfileState extends State<Profile> {
           didNumbers.add(contact);
         });
       }
+  }
+  
+  void getCurUser() async
+  {
+    String x = await platform.invokeMethod('getCurUser');
+    setState(() {
+      curUser = x;
+    });
+  }
+
+  @override
+  void initState()
+  {
+    getCurUser();
   }
 
   @override
@@ -32,7 +49,7 @@ class _ProfileState extends State<Profile> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Spacer(flex: 1,),
+          SizedBox(height: 20,),
 
           Center(
             child: Container(
@@ -47,6 +64,11 @@ class _ProfileState extends State<Profile> {
                 child: Icon(Icons.person, size: 60,),
               ),
             ),
+          ),
+
+          SizedBox(height: 20,),
+          Center(
+            child: Text(curUser, style: TextStyle(fontSize: 25),),
           ),
 
           Spacer(flex: 1,),

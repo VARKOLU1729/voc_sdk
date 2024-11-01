@@ -63,7 +63,7 @@ class _CallScreenState extends State<CallScreen> {
     });
   }
 
-  void onLoudSpeaker() async
+  void toggleLoudSpeaker() async
   {
     await platform.invokeMethod('toggleLoudSpeaker', {'onLoud':onLoud});
     setState(() {
@@ -169,7 +169,7 @@ class _CallScreenState extends State<CallScreen> {
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Color.fromARGB(255, 26, 28, 33),
-                      child: IconButton(onPressed: onLoudSpeaker,
+                      child: IconButton(onPressed: toggleLoudSpeaker,
                           icon: Icon(onLoud ? Icons.volume_down_sharp :Icons.volume_up_outlined, color: Colors.white,size: 30,)
                       ),
                     ),
@@ -185,6 +185,7 @@ class _CallScreenState extends State<CallScreen> {
                     icon: Icon(Icons.call_end_outlined, color: Colors.black87, size: 40,), // Icon color
                     onPressed: () {
                       endCall();
+                      Navigator.pop(context);
                     },
                   ),
                 ),
