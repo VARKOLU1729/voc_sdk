@@ -19,6 +19,7 @@ class _CallScreenState extends State<CallScreen> {
   bool callOnHold = false;
   bool callOnMute = false;
   bool callRecord = false;
+  bool onLoud = false;
 
   StopWatchTimer timer = StopWatchTimer(
                     mode: StopWatchMode.countUp
@@ -57,7 +58,18 @@ class _CallScreenState extends State<CallScreen> {
   void recordCall() async
   {
     await platform.invokeMethod('recordCall', {'isRecording':callRecord});
-    callRecord = !callRecord;
+    setState(() {
+      callRecord = !callRecord;
+    });
+  }
+
+  void onLoudSpeaker() async
+  {
+    await platform.invokeMethod('toggleLoudSpeaker', {'onLoud':onLoud});
+    setState(() {
+      onLoud = !onLoud;
+    });
+
   }
 
   @override
@@ -73,6 +85,7 @@ class _CallScreenState extends State<CallScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: AppBar(),
+      backgroundColor: Color.fromARGB(255, 26, 28, 33),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -85,7 +98,7 @@ class _CallScreenState extends State<CallScreen> {
             // color: Colors.grey,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.grey.withOpacity(0.5)
+              color: Colors.white
             ),
             child: ClipOval(
               child: Icon(Icons.person, size: 60,),
@@ -94,9 +107,9 @@ class _CallScreenState extends State<CallScreen> {
 
           SizedBox(height: 10,),
 
-          Text(calleName, style: TextStyle(color: Colors.black87, fontSize: 30),),
+          Text(calleName, style: TextStyle(color: Colors.white, fontSize: 30),),
 
-          Text(widget.contactNumber, style: TextStyle(color: Colors.black87, fontSize: 25),),
+          Text(widget.contactNumber, style: TextStyle(color: Colors.white, fontSize: 25),),
 
           StreamBuilder(
               stream: timer.rawTime,
@@ -107,7 +120,7 @@ class _CallScreenState extends State<CallScreen> {
                     final val = snapshot.data;
                     final displayTime = StopWatchTimer.getDisplayTime(val!);
                     
-                    return Text("${displayTime.substring(3,8)}");
+                    return Text("${displayTime.substring(3,8)}", style: TextStyle(color: Colors.white),);
                   }
                 return Text("Timer");
               }
@@ -115,34 +128,72 @@ class _CallScreenState extends State<CallScreen> {
 
           Spacer(flex: 3,),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(onPressed: holdCall,
-                  icon: Icon(callOnHold ? Icons.call_to_action_rounded :Icons.call_to_action_outlined)
+          Container(
+            height: 300,
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 36, 42, 50),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
-              IconButton(onPressed: recordCall,
-                  icon: Icon(callRecord ? Icons.record_voice_over :Icons.record_voice_over_outlined)
-              ),
-              IconButton(onPressed: muteCall,
-                  icon: Icon(callOnMute ? Icons.mic_off :Icons.mic)
-              ),
-            ],
+            ),
+            child: Column(
+              children: [
+                Spacer(flex: 1,),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Color.fromARGB(255, 26, 28, 33),
+                      radius: 30,
+                      child: IconButton(onPressed: holdCall,
+                          icon: Icon(callOnHold ? Icons.call_to_action_rounded :Icons.call_to_action_outlined, color: Colors.white,size:30,)
+                      ),
+                    ),
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Color.fromARGB(255, 26, 28, 33),
+                      child: IconButton(onPressed: recordCall,
+                          icon: Icon(callRecord ? Icons.record_voice_over :Icons.record_voice_over_outlined, color: Colors.white,size: 30,)
+                      ),
+                    ),
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Color.fromARGB(255, 26, 28, 33),
+                      child: IconButton(onPressed: muteCall,
+                          icon: Icon(callOnMute? Icons.mic_off :Icons.mic, color: Colors.white,size: 30,)
+                      ),
+                    ),
+
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Color.fromARGB(255, 26, 28, 33),
+                      child: IconButton(onPressed: onLoudSpeaker,
+                          icon: Icon(onLoud ? Icons.volume_down_sharp :Icons.volume_up_outlined, color: Colors.white,size: 30,)
+                      ),
+                    ),
+                  ],
+                ),
+
+                Spacer(flex: 2,),
+
+                CircleAvatar(
+                  backgroundColor: Colors.red, // Background color
+                  radius: 40, // Size of the circle
+                  child: IconButton(
+                    icon: Icon(Icons.call_end_outlined, color: Colors.black87, size: 40,), // Icon color
+                    onPressed: () {
+                      endCall();
+                    },
+                  ),
+                ),
+
+                Spacer(flex: 1,)
+              ],
+            ),
           ),
 
-          Spacer(flex: 1,),
-
-          FloatingActionButton(
-            heroTag: "1",
-            onPressed:(){
-              endCall();
-              Navigator.pop(context);
-              },
-            child: Icon(Icons.call),
-            backgroundColor: Colors.red,
-          ),
-
-          Spacer(flex: 1,),
         ],
       ),
     );
