@@ -4,6 +4,8 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../Services/native_event_listener.dart';
+
 class CallScreen extends StatefulWidget {
   final String contactNumber;
   const CallScreen({super.key, required this.contactNumber});
@@ -14,12 +16,16 @@ class CallScreen extends StatefulWidget {
 
 class _CallScreenState extends State<CallScreen> {
 
+  final NativeEventNotifier notifier = NativeEventNotifier();
+
   static const platform = MethodChannel('VOICECALL');
   String calleName = "Unknown";
   bool callOnHold = false;
   bool callOnMute = false;
   bool callRecord = false;
   bool onLoud = false;
+  bool callAnswered = false;
+  bool callRinging = false;
 
   StopWatchTimer timer = StopWatchTimer(
                     mode: StopWatchMode.countUp
@@ -72,12 +78,52 @@ class _CallScreenState extends State<CallScreen> {
 
   }
 
+  void handleNativeEvent() async
+  {
+
+  }
+
   @override
   void initState()
   {
     super.initState();
     initiateCall();
-    timer.onStartTimer();
+    notifier.startListening((eventData){
+      if(eventData['callAnswered'])
+        {
+          setState(() {
+            callAnswered = true;
+            timer.onStartTimer();
+          });
+        }
+      else if(eventData['callRinging'])
+      {
+        setState(() {
+          callRinging = true;
+        });
+      }
+      else if(eventData['callNoAnswer'])
+      {
+        setState(() {
+          timer.onStopTimer();
+          endCall();
+        });
+      }
+      else if(eventData['callEnded'])
+      {
+        setState(() {
+          timer.onStopTimer();
+          endCall();
+        });
+      }
+      else if(eventData['callTerminated'])
+      {
+        setState(() {
+          timer.onStopTimer();
+          endCall();
+        });
+      }
+    });
   }
 
 
@@ -111,6 +157,13 @@ class _CallScreenState extends State<CallScreen> {
 
           Text(widget.contactNumber, style: TextStyle(color: Colors.white, fontSize: 25),),
 
+          if(!callAnswered && !callRinging)
+            Text("Connecting...", style: TextStyle(color: Colors.white),),
+
+          if(!callAnswered && callRinging)
+            Text("Ringing...", style: TextStyle(color: Colors.white),),
+
+          if(callAnswered)
           StreamBuilder(
               stream: timer.rawTime,
               builder:(context, snapshot)

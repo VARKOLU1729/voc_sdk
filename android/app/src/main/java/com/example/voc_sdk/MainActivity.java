@@ -5,26 +5,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.nfc.Tag;
 import android.os.Bundle;
 import com.ca.Utils.CSDbFields;
 
-import com.ca.app.App;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.ca.dao.CSContact;
-import com.ca.dao.CSExplicitEventReceivers;
 import com.ca.dao.CSAppDetails;
 import com.ca.dao.CSLocation;
 import com.ca.wrapper.CSCall;
-import com.ca.wrapper.CSChat;
 import com.ca.wrapper.CSClient;
 import com.ca.wrapper.CSDataProvider;
 import com.cacore.services.CACommonService;
 import com.ca.Utils.CSConstants;
+import com.ca.app.App;
 import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.plugin.common.MethodChannel;
@@ -40,15 +37,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import com.example.voc_sdk.EventNotifier;
+
 
 public class MainActivity extends FlutterActivity {
 
     private static final String CHANNEL = "VOICECALL";
     private static final String TAG = "vijay";
+    public EventNotifier eventNotifier;
 
     private FusedLocationProviderClient fusedLocationClient;
 
-
+//
 //    private String appname = "Runo";
 //    private String projectId = "pid_0d5bb4ba_421b_4351_b6aa_f9585ba9f309";
 //    private String phoneNumber = "+916301450563";
@@ -93,15 +95,18 @@ public class MainActivity extends FlutterActivity {
                     handleSignupResponse(intent);
                     break;
                 case "CSCALL_CALLANSWERED":
+                    eventNotifier.notifyEvent("callAnswered", true);
                     Log.i(TAG, "Call Answered");
                     break;
 
                 case "CSCALL_CALLENDED":
                     Log.i(TAG, "Call Ended");
+                    eventNotifier.notifyEvent("callEnded", true);
                     handleCallEndedResponse(intent);
                     break;
 
                 case "CSCALL_NOANSWER":
+                    eventNotifier.notifyEvent("callNoAnswer", true);
                     Log.i(TAG, "No Answer");
                     break;
 
@@ -110,6 +115,7 @@ public class MainActivity extends FlutterActivity {
                     break;
 
                 case "CSCALL_RINGING":
+                    eventNotifier.notifyEvent("callRinging", true);
                     Log.i(TAG, "Call Ringing");
                     break;
 
@@ -127,6 +133,7 @@ public class MainActivity extends FlutterActivity {
 
                 case "CSCALL_CALLTERMINATED":
                     Log.i(TAG, "Call Terminated");
+                    eventNotifier.notifyEvent("callTerminated", true);
                     break;
 
 
@@ -149,6 +156,12 @@ public class MainActivity extends FlutterActivity {
                 case "CSCONTACTS_CONTACTSUPDATED":
                     Log.i(TAG, "CSCONTACTS_UPDATED");
                     break;
+
+                case "CSCLIENT_DELETECONTACT_RESPONSE":
+                    Log.i(TAG, "CSCONTACTS_DELETED");
+                    break;
+
+
                     
 //                 currently not focusing on activation 
 //                case "CSCLIENT_ACTIVATION_RESPONSE":
@@ -181,6 +194,10 @@ public class MainActivity extends FlutterActivity {
         Intent serviceIntent1 = new Intent(this, CACommonService.class);
         startService(serviceIntent1);
 
+        MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
+         eventNotifier = new EventNotifier(methodChannel);
+
+
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
 
@@ -196,6 +213,7 @@ public class MainActivity extends FlutterActivity {
                             Log.i(TAG, "toggling loud speaker...");
                             boolean onLoud = call.argument("onLoud");
                             csCall.enableSpeaker(callId, !onLoud);
+                            result.success("");
                             break;
 
                         case "deleteCallLog":
@@ -207,18 +225,22 @@ public class MainActivity extends FlutterActivity {
 
                         case "holdCall":
                             Log.i(TAG,"call toggle hold...");
+//                            eventNotifier.notifyEvent("callAnswered", true);
                             boolean callOnHold = call.argument("onHold");
                             csCall.holdPstnCall(callId, !callOnHold);
+                            result.success("");
                             break;
 
                         case "muteCall":
                             Log.i(TAG,"call toggle mute...");
                             boolean callOnMute = call.argument("onMute");
                             csCall.muteAudio(callId, !callOnMute);
+                            result.success("");
                             break;
 
                         case "recordCall":
-                            Log.i(TAG,"recored will be implemented later");
+                            Log.i(TAG,"record call will be implemented later");
+                            result.success("");
                             break;
 
                         case "getCallLogs":
@@ -252,6 +274,7 @@ public class MainActivity extends FlutterActivity {
                                     iterations = iterations-1;
                                 }
                             }
+                            cfcl.close();
                             result.success(callLogs);
                             break;
 
@@ -272,6 +295,15 @@ public class MainActivity extends FlutterActivity {
                             ArrayList<CSContact> contactsList = new ArrayList<>();
                             contactsList.add(csContact);
                             csClient.addContacts(contactsList);
+                            result.success("");
+                            break;
+
+                        case "deleteContact":
+                            Log.i(TAG, "deleting contact...");
+                            String identifier = call.argument("contact");
+                            Log.i(TAG, identifier);
+                            csClient.deleteContact(identifier);
+                            result.success("");
                             break;
 
                         case "getTime":
@@ -295,16 +327,19 @@ public class MainActivity extends FlutterActivity {
                                     iterationsForContacts = iterationsForContacts-1;
                                 }
                             }
+                            cfcc.close();
                             result.success(contacts);
                             break;
 
                         case "endCall":
                             csCall.endPstnCall(calle, callId);
+                            result.success("");
                             break;
 
                         case "answerCall":
                             //answer the call
                             csCall.answerPstnCall(caller, callId, "HI", new CSLocation(17.4507,78.3814,"Cyber Towers"));
+                            result.success("");
                             break;
 
                         case "initiateCall":
@@ -325,6 +360,7 @@ public class MainActivity extends FlutterActivity {
                                 calleName = cfcn.getString(cfcn.getColumnIndexOrThrow(CSDbFields.KEY_CONTACT_NAME));
                             }
                             Log.i(TAG, calleName);
+                            cfcn.close();
                             result.success(calleName);
                             break;
 
@@ -352,6 +388,15 @@ public class MainActivity extends FlutterActivity {
                 });
     }
 
+
+    private void invokenotifyEventMethod(String eventName, String eventData)
+    {
+        new Thread(
+                ()->{eventNotifier.notifyEvent(eventName, eventData);}
+        ).start();
+    }
+
+
     private static @NonNull IntentFilter getIntentFilter() {
         IntentFilter filter = new IntentFilter();
         filter.addAction("CSCLIENT_NETWORKERROR");
@@ -376,6 +421,7 @@ public class MainActivity extends FlutterActivity {
         filter.addAction("CSCLIENT_ADDCONTACT_RESPONSE");
         filter.addAction("CSCONTACTS_CONTACTSUPDATED");
         filter.addAction("CSCALL_HOLD_UNHOLD_RESPONSE");
+        filter.addAction("CSCLIENT_DELETECONTACT_RESPONSE");
         return filter;
     }
 
@@ -430,7 +476,7 @@ public class MainActivity extends FlutterActivity {
 
     public void handleSignupResponse(Intent intent) {
         String result = intent.getStringExtra("RESULT");
-        int resultCode = -1;
+       String resultCode = Objects.requireNonNull(Objects.requireNonNull(intent.getExtras()).get("RESULTCODE")).toString();
 
         if ("success".equals(result))
         {
@@ -439,7 +485,7 @@ public class MainActivity extends FlutterActivity {
         }
         else
         {
-            Log.i(TAG, "signUp failed with result code " + handleResultCode(resultCode));
+            Log.i(TAG, "SignUp failed : " + resultCode);
         }
     }
 
@@ -448,7 +494,7 @@ public class MainActivity extends FlutterActivity {
         String endReason = intent.getStringExtra("endReason");
         Log.i(TAG, "call Ended Reason : " + endReason);
 
-        String dstNumber = intent.getStringExtra("dstmumber");
+        String dstNumber = intent.getStringExtra("dstmumber");//dstmumber(in the code they added the intent with this key name only)
         Log.i(TAG, "dstnumbber : " + dstNumber);
 
         String srcNumber = intent.getStringExtra("srcnumber");
@@ -483,8 +529,8 @@ public class MainActivity extends FlutterActivity {
 
     public void handleSignInResponse(Intent intent) {
         String result = intent.getStringExtra("RESULT");
-//        int resultCode = intent.getIntExtra(CSConstants.RESULTCODE, -1);
-        int resultCode = -1;
+        String resultCode = Objects.requireNonNull(Objects.requireNonNull(intent.getExtras()).get("RESULTCODE")).toString();
+
         if ("success".equals(result)) {
 
             Log.i(TAG, "Login success from login");
@@ -511,7 +557,7 @@ public class MainActivity extends FlutterActivity {
 
 
         } else {
-            Log.i(TAG, "Login failed" + handleResultCode(resultCode));
+            Log.i(TAG, "Login failed : " + resultCode);
         }
     }
 

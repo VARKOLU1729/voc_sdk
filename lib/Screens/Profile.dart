@@ -71,11 +71,30 @@ class _ProfileState extends State<Profile> {
             child: Text(curUser, style: TextStyle(fontSize: 25),),
           ),
 
-          Spacer(flex: 1,),
+          const Spacer(flex: 1,),
+
 
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text("Your DID Numbers", style: TextStyle(fontSize: 20),),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("My DID Numbers", style: TextStyle(fontSize: 20),),
+                FilledButton(
+                  onPressed: (){
+                    showDialog(
+                        context: context,
+                        builder: (context)
+                        {
+                          return showAlertDialog(context);
+                        }
+                    );
+                  },
+                  child: const Text("+", style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),),
+
+                ),
+              ],
+            ),
           ),
 
           Expanded(
@@ -85,75 +104,66 @@ class _ProfileState extends State<Profile> {
                       {
                         return Card(
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(didNumbers[index]),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            child: Text(didNumbers[index], style: TextStyle(fontSize: 15),),
                           ),
                         );
                       }
               )
           ),
 
-          Center(
-            child: FilledButton(
-              onPressed: (){
-                showDialog(
-                    context: context,
-                    builder: (context)
-                    {
-                      return AlertDialog(
-                        content: Form(
-                          key: formKey,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextFormField(
-                                decoration: InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    label: Text("Mobile Number")
-                                ),
-                                validator:(val){
-                                  if(val!.length<10)
-                                  {
-                                    return "Mobile number has to be 10 digits";
-                                  }
-                                  return null;
-                                },
-                                onChanged: (val){
-                                  contact = "+91$val";
-                                },
-                              ),
 
-                            ],
-                          ),
-                        ),
-                        actionsAlignment: MainAxisAlignment.spaceBetween,
-                        actions: [
-                          FilledButton(
-                              onPressed: (){
-                                Navigator.pop(context);
-                              },
-                              child: Text("Close")
-                          ),
-                          FilledButton(
-                              onPressed: (){
-                                save();
-                                Navigator.pop(context);
-                              },
-                              child: Text("Save")
-                          )
-                        ],
-
-                      );
-                    }
-                );
-              },
-              child: Text("Add new DID Number"),
-
-            ),
-          ),
           Spacer(flex: 3,),
         ],
       ),
+    );
+  }
+
+  AlertDialog showAlertDialog(BuildContext context)
+  {
+    return AlertDialog(
+      content: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              decoration:const InputDecoration(
+                  border: OutlineInputBorder(),
+                  label: Text("Mobile Number")
+              ),
+              validator:(val){
+                if(val!.length<10)
+                {
+                  return "Mobile number has to be 10 digits";
+                }
+                return null;
+              },
+              onChanged: (val){
+                contact = "+91$val";
+              },
+            ),
+
+          ],
+        ),
+      ),
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      actions: [
+        FilledButton(
+            onPressed: (){
+              Navigator.pop(context);
+            },
+            child:const Text("Close")
+        ),
+        FilledButton(
+            onPressed: (){
+              save();
+              Navigator.pop(context);
+            },
+            child:const Text("Save")
+        )
+      ],
+
     );
   }
 }

@@ -49,6 +49,17 @@ class _ContactsState extends State<Contacts> {
         });
       }
   }
+  
+  void deleteContact({required String contactNumber}) async
+  {
+    await platform.invokeMethod('deleteContact', {"contact" : contactNumber});
+    setState(() {
+      contactsName = [];
+      contactsNumber = [];
+      getContacts();
+    });
+  }
+  
 
 
 
@@ -75,28 +86,61 @@ class _ContactsState extends State<Contacts> {
                   return Card(
                     child: Padding(
                       padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          RichText(
-                              text:TextSpan(
-                                style: TextStyle(color: Colors.black87),
-                                children: [
-                                  TextSpan(text: contactsName[index]),
-                                  TextSpan(text: '\n'),
-                                  TextSpan(text: contactsNumber[index])
-                                ]
-                              )
-                          ),
+                      child: InkWell(
+                        onLongPress :  (){
+                          showMenu(
+                              context: context,
+                              position: RelativeRect.fromLTRB(100, 100*(index+1), 0, 0),
+                              items: [
+                                PopupMenuItem(
+                                    onTap:(){ deleteContact(contactNumber: contactsNumber[index]);},
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.delete),
+                                        Text("delete")
+                                      ],
+                                    )
+                                )
+                              ]
+                          );
+                        },
+                        child: Dismissible(
+                          key: Key(contactsNumber[index]),
+                          onDismissed: (DismissDirection){
+                            deleteContact(contactNumber: contactsNumber[index]);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              RichText(
+                                  text:TextSpan(
+                                    style: TextStyle(color: Colors.black87),
+                                    children: [
+                                      TextSpan(text: contactsName[index]),
+                                      TextSpan(text: '\n'),
+                                      TextSpan(text: contactsNumber[index])
+                                    ]
+                                  )
+                              ),
 
-                          IconButton(
-                              onPressed: (){
-                                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: contactsNumber[index])));
-                                CallScreen(contactNumber: contactsNumber[index],);
-                              },
-                              icon: Icon(Icons.wifi_calling)
-                          )
-                        ],
+                              // IconButton(
+                              //     onPressed: (){
+                              //       // Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: contactsNumber[index])));
+                              //       // CallScreen(contactNumber: contactsNumber[index],);
+                              //       deleteContact(contactNumber: contactsNumber[index]);
+                              //     },
+                              //     icon: Icon(Icons.delete)
+                              // ),
+                              IconButton(
+                                  onPressed: (){
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context)=>CallScreen(contactNumber: contactsNumber[index])));
+                                    CallScreen(contactNumber: contactsNumber[index],);
+                                  },
+                                  icon: Icon(Icons.wifi_calling)
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   );
