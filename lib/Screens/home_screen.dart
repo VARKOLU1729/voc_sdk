@@ -56,7 +56,7 @@ class _CallScreenState extends State<HomeScreen> {
     try {
       //to signUp a new user - uncomment the below line
       // await signUpNewUser(userName: userName, password: password);
-      String curUser = await platform.invokeMethod('getLoginStatus', {'loginId': userName, 'password': password});
+      String curUser = await platform.invokeMethod('initVox', {'loginId': userName, 'password': password});
       setState(() {
         user = curUser;
         _isLoading = false; // Reset loading state
@@ -81,6 +81,16 @@ class _CallScreenState extends State<HomeScreen> {
     } else if (status.isPermanentlyDenied) {
       openAppSettings();
     }
+    PermissionStatus phStatus = await Permission.phone.status;
+    print("vijay ph");
+    if(phStatus.isDenied)
+      {
+        print("vijay ph is req");
+      }
+    else if(phStatus.isPermanentlyDenied)
+      {
+        openAppSettings();
+      }
   }
 
   void initiateCall() async

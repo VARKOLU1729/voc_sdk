@@ -13,12 +13,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.ca.Utils.CSEvents;
 import com.ca.dao.CSContact;
 import com.ca.dao.CSAppDetails;
 import com.ca.dao.CSLocation;
 import com.ca.wrapper.CSCall;
 import com.ca.wrapper.CSClient;
 import com.ca.wrapper.CSDataProvider;
+import com.cacore.receivers.NWMonitor;
 import com.cacore.services.CACommonService;
 import com.ca.Utils.CSConstants;
 import com.ca.app.App;
@@ -32,17 +34,21 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import android.location.Location;
 import android.Manifest;
+import android.telephony.TelephonyManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.cacore.receivers.NWMonitor;
+import com.cacore.receivers.a;
+import com.ca.app.App;
 
 import com.example.voc_sdk.EventNotifier;
 
 
-public class MainActivity extends FlutterActivity {
+public class MainActivity extends FlutterActivity{
 
     private static final String CHANNEL = "VOICECALL";
     private static final String TAG = "vijay";
@@ -50,18 +56,19 @@ public class MainActivity extends FlutterActivity {
 
     private FusedLocationProviderClient fusedLocationClient;
 
-//
-//    private String appname = "Runo";
-//    private String projectId = "pid_0d5bb4ba_421b_4351_b6aa_f9585ba9f309";
-//    private String phoneNumber = "+916301450563";
-//    private String password = "12345";
 
-    private String appname = "testproject3";
-    private String projectId = "pid_8bd54124_dbf1_4df8_85cf_320c933258a0";
-    private String phoneNumber = "abcd";
+    private String appname = "Runo";
+    private String projectId = "pid_0d5bb4ba_421b_4351_b6aa_f9585ba9f309";
+    private String phoneNumber = "testUser1";
     private String password = "12345";
 
-    private String caller = "+917901659261";     // caller is who is calling - as per docs it is some did(is ntg but a virtual number) number
+//    private String appname = "testproject3";
+//    private String projectId = "pid_8bd54124_dbf1_4df8_85cf_320c933258a0";
+//    private String phoneNumber = "abcd";
+//    private String password = "12345";
+
+//    private String caller = "+917901659261";     // caller is who is calling - as per docs it is some did(is ntg but a virtual number) number
+    private String caller = "+917901659282";
     private String calle =  "+916301450563";     // calle is to whom you are calling - mobile number
     private String callId = "";    //will obtain from startPstnCall - will set in future
     private String calleName = "Unknown"; //will obtain from dataprovider
@@ -98,67 +105,55 @@ public class MainActivity extends FlutterActivity {
                     eventNotifier.notifyEvent("callAnswered", true);
                     Log.i(TAG, "Call Answered");
                     break;
-
                 case "CSCALL_CALLENDED":
                     Log.i(TAG, "Call Ended");
                     eventNotifier.notifyEvent("callEnded", true);
                     handleCallEndedResponse(intent);
                     break;
-
                 case "CSCALL_NOANSWER":
                     eventNotifier.notifyEvent("callNoAnswer", true);
                     Log.i(TAG, "No Answer");
                     break;
-
                 case "CSCALL_NOMEDIA":
                     Log.i(TAG, "No Media in the call");
                     break;
-
                 case "CSCALL_RINGING":
                     eventNotifier.notifyEvent("callRinging", true);
                     Log.i(TAG, "Call Ringing");
                     break;
-
                 case "CSCALL_SESSION_IN_PROGRESS":
                     Log.i(TAG, "Call Session In Progress");
                     break;
-
                 case "CSCALL_MEDIACONNECTED":
                     Log.i(TAG, "Media Connected");
                     break;
-
                 case "CSCALL_MEDIADISCONNECTED":
                     Log.i(TAG, "Media Disconnected");
                     break;
-
                 case "CSCALL_CALLTERMINATED":
                     Log.i(TAG, "Call Terminated");
                     eventNotifier.notifyEvent("callTerminated", true);
                     break;
-
-
                 case "CSCLIENT_GSM_CALL_INPROGRESS":
                     Log.i(TAG, "GSM Call In Progress");
                     break;
-
                 case "CSCLIENT_PERMISSION_NEEDED":
                     Log.w(TAG, "Permission Needed");
                     break;
-
                 case "CSCALL_RECORDING_AT_SERVER":
                     Log.i(TAG, "Call Recording at Server");
                     break;
-
                 case "CSCLIENT_ADDCONTACT_RESPONSE":
                     Log.i(TAG, "CSCLIENT_ADD_CONTACT_RESPONSE");
                     break;
-
                 case "CSCONTACTS_CONTACTSUPDATED":
                     Log.i(TAG, "CSCONTACTS_UPDATED");
                     break;
-
                 case "CSCLIENT_DELETECONTACT_RESPONSE":
                     Log.i(TAG, "CSCONTACTS_DELETED");
+                    break;
+                case "CSCALL_CALLLOGUPDATED":
+                    Log.i(TAG, "CALL LOG UPDATED");
                     break;
 
 
@@ -197,6 +192,11 @@ public class MainActivity extends FlutterActivity {
         MethodChannel methodChannel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
          eventNotifier = new EventNotifier(methodChannel);
 
+        IntentFilter filter1 = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        NWMonitor NWMonitorObj = new NWMonitor();
+        localBroadcastManager.registerReceiver(NWMonitorObj,filter1);
+
+
 
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
@@ -208,6 +208,7 @@ public class MainActivity extends FlutterActivity {
                         case "getCurUser":
                             Log.i(TAG, "getting current user login Id...");
                             result.success(CSDataProvider.getLoginID());
+                            break;
 
                         case "toggleLoudSpeaker":
                             Log.i(TAG, "toggling loud speaker...");
@@ -309,6 +310,7 @@ public class MainActivity extends FlutterActivity {
                         case "getTime":
                             long curTime = csClient.getTime();
                             result.success(curTime);
+                            break;
 
                         case "getContacts":
                             Log.i(TAG, "obtaining contacts....");
@@ -343,11 +345,15 @@ public class MainActivity extends FlutterActivity {
                             break;
 
                         case "initiateCall":
-
                             String contactNumber = call.argument("contactNumber");
                             calle = contactNumber;
                             //start the call
+                            Log.i(TAG, "calle : "+calle);
+                            Log.i(TAG, "caller : "+caller);
                             callId = csCall.startPstnCall(calle,caller, "HI",new CSLocation(17.4507,78.3814,"Cyber Towers"));
+                            TelephonyManager telManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+                            boolean isIdle = (telManager.getCallState() == TelephonyManager.CALL_STATE_IDLE);
+                            Log.i(TAG , "tel is idle : "+isIdle);
                             Log.i(TAG, "pstnResp Call id : " + callId);
                             //check if the call is answerable
                             boolean isCallAnswerable = CSCall.isCallAnswerable(callId);
@@ -364,11 +370,12 @@ public class MainActivity extends FlutterActivity {
                             result.success(calleName);
                             break;
 
-                        case "getLoginStatus":
+                        case "initVox":
 //                            csClient.reset();
                             CSAppDetails csAppDetails = new CSAppDetails(appname, projectId);
-                            csClient.initialize(null, 0, csAppDetails);
+                            csClient.initialize("13.234.229.198", 8050, csAppDetails);
                             String curUser = CSDataProvider.getLoginID();
+                            Log.i(TAG, "curUser from ... : "+curUser);
                             result.success(curUser);
                             break;
                     }
@@ -389,39 +396,34 @@ public class MainActivity extends FlutterActivity {
     }
 
 
-    private void invokenotifyEventMethod(String eventName, String eventData)
-    {
-        new Thread(
-                ()->{eventNotifier.notifyEvent(eventName, eventData);}
-        ).start();
-    }
 
 
     private static @NonNull IntentFilter getIntentFilter() {
         IntentFilter filter = new IntentFilter();
-        filter.addAction("CSCLIENT_NETWORKERROR");
-        filter.addAction("CSCLIENT_INITILIZATION_RESPONSE");
-        filter.addAction("CSCLIENT_SIGNUP_RESPONSE");
-        filter.addAction("CSCLIENT_LOGIN_RESPONSE");
-        filter.addAction("CSCLIENT_LIMIT_EXCEEDED");
-        filter.addAction("CSCALL_CALLANSWERED");
-        filter.addAction("CSCALL_CALLENDED");
-        filter.addAction("CSCALL_NOANSWER");
-        filter.addAction("CSCALL_NOMEDIA");
-        filter.addAction("CSCALL_RINGING");
-        filter.addAction("CSCALL_SESSION_IN_PROGRESS");
-        filter.addAction("CSCALL_MEDIACONNECTED");
-        filter.addAction("CSCALL_MEDIADISCONNECTED");
-        filter.addAction("CSCALL_CALLTERMINATED");
-        filter.addAction("CSCLIENT_PSTN_REGISTRATION_RESPONSE");
-        filter.addAction("CSCLIENT_NETWORKERROR");
-        filter.addAction("CSCLIENT_GSM_CALL_INPROGRESS");
-        filter.addAction("CSCLIENT_PERMISSION_NEEDED");
-        filter.addAction("CSCALL_RECORDING_AT_SERVER");
-        filter.addAction("CSCLIENT_ADDCONTACT_RESPONSE");
-        filter.addAction("CSCONTACTS_CONTACTSUPDATED");
-        filter.addAction("CSCALL_HOLD_UNHOLD_RESPONSE");
-        filter.addAction("CSCLIENT_DELETECONTACT_RESPONSE");
+        filter.addAction(CSEvents.CSCLIENT_NETWORKERROR);
+        filter.addAction(CSEvents.CSCLIENT_INITILIZATION_RESPONSE);
+        filter.addAction(CSEvents.CSCLIENT_SIGNUP_RESPONSE);
+        filter.addAction(CSEvents.CSCLIENT_LOGIN_RESPONSE);
+        filter.addAction(CSEvents.CSCLIENT_LIMIT_EXCEEDED);
+        filter.addAction(CSEvents.CSCALL_CALLANSWERED);
+        filter.addAction(CSEvents.CSCALL_CALLENDED);
+        filter.addAction(CSEvents.CSCALL_NOANSWER);
+        filter.addAction(CSEvents.CSCALL_NOMEDIA);
+        filter.addAction(CSEvents.CSCALL_RINGING);
+        filter.addAction(CSEvents.CSCALL_SESSION_IN_PROGRESS);
+        filter.addAction(CSEvents.CSCALL_MEDIACONNECTED);
+        filter.addAction(CSEvents.CSCALL_MEDIADISCONNECTED);
+        filter.addAction(CSEvents.CSCALL_CALLTERMINATED);
+        filter.addAction(CSEvents.CSCLIENT_PSTN_REGISTRATION_RESPONSE);
+        filter.addAction(CSEvents.CSCLIENT_NETWORKERROR);
+        filter.addAction(CSEvents.CSCLIENT_GSM_CALL_INPROGRESS);
+        filter.addAction(CSEvents.CSCLIENT_PERMISSION_NEEDED);
+        filter.addAction(CSEvents.CSCALL_RECORDING_AT_SERVER);
+        filter.addAction(CSEvents.CSCLIENT_ADDCONTACT_RESPONSE);
+        filter.addAction(CSEvents.CSCONTACTS_CONTACTSUPDATED);
+        filter.addAction(CSEvents.CSCALL_HOLD_UNHOLD_RESPONSE);
+        filter.addAction(CSEvents.CSCLIENT_DELETECONTACT_RESPONSE);
+        filter.addAction(CSEvents.CSCALL_CALLLOGUPDATED);
         return filter;
     }
 
@@ -547,7 +549,7 @@ public class MainActivity extends FlutterActivity {
             boolean isPSTNRegistered = csClient.registerForPSTNCalls();
             Log.i(TAG, "PSTN REGISTERED " + isPSTNRegistered);
 
-            boolean setAudioCodec = csCall.setPreferredAudioCodec(CSConstants.PreferredAudioCodec.opus);
+            boolean setAudioCodec = csCall.setPreferredAudioCodec(CSConstants.PreferredAudioCodec.PCMA);
             Log.i(TAG, "setAudioCodec " + setAudioCodec);
 
             //enable callStats
