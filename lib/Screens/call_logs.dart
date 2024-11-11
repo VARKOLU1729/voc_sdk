@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+
+import '../models/call_logs_model.dart';
 
 class CallLogs extends StatefulWidget {
   const CallLogs({super.key});
@@ -13,20 +16,29 @@ class CallLogs extends StatefulWidget {
 class _CallLogsState extends State<CallLogs> {
 
   static const platform = MethodChannel('VOICECALL');
-  List<dynamic> callIds = [];
+  List<CallLogsModel> callLogs = [];
   int curTime = 0;
 
-  List<List<dynamic>> callLogs = [];
-
-  void getCallLogs() async
-  {
+  void getCallLogs() async {
     Map<dynamic, dynamic> x = await platform.invokeMethod('getCallLogs');
-    print(x);
+    List<CallLogsModel> tempLogs = [];
+
+    x.forEach((key, value) {
+      Map<String, dynamic> logData = {
+        'call_Id': key,
+        'calle_name': value[0],
+        'calle_number': value[1],
+        'call_type': value[2],
+        'call_start_time': value[3],
+        'call_duration': value[4],
+      };
+      tempLogs.add(CallLogsModel.fromJson(logData));
+    });
+
+    tempLogs.sort((a, b) => int.parse(b.callStartTime).compareTo(int.parse(a.callStartTime)));
+
     setState(() {
-      x.forEach((key, value) {
-        callIds.add(key);
-        callLogs.add(value);
-      });
+      callLogs = tempLogs;
     });
   }
 
@@ -34,11 +46,12 @@ class _CallLogsState extends State<CallLogs> {
   {
     String x = await platform.invokeMethod('deleteCallLog', {'callId' : callId});
     setState(() {
-      callIds = [];
-      callLogs = [];
+      callLogs.clear();
       getCallLogs();
     });
   }
+
+
   void getTime() async
   {
     dynamic x = await platform.invokeMethod('getTime');
@@ -48,7 +61,24 @@ class _CallLogsState extends State<CallLogs> {
     });
   }
 
+  String getTimeDifference(int epoch) {
+    DateTime callTime = DateTime.fromMillisecondsSinceEpoch(epoch); // Convert epoch to DateTime
+    DateTime currentTime = DateTime.now();
 
+    Duration difference = currentTime.difference(callTime);
+
+    // If the call was today
+    if (difference.inDays == 0) {
+      if (difference.inHours < 1) {
+        return '${difference.inMinutes} mins ago';
+      } else {
+        return '${difference.inHours} hours ago';
+      }
+    } else {
+      // If the call was not today, show the date
+      return DateFormat('dd-MM-yyyy').format(callTime);
+    }
+  }
 
   bool checkCallType( String callType)
   {
@@ -75,58 +105,35 @@ class _CallLogsState extends State<CallLogs> {
           itemCount: callLogs.length,
           itemBuilder: (context, index)
           {
-            int time = ((curTime - int.parse(callLogs[index][3]))/60000).truncate();
-            String msg = "mins ago";
-            if(time<60)
-              {
-                time = time;
-                msg = "mins ago";
-              }
-            else if(time>60 && time<1440)
-              {
-                time = time%60;
-                msg = "hours ago";
-              }
-            else if(time>1440 && time<2880)
-            {
-              time = -1;
-              msg = "Yesterday";
-            }
-            else
-              {
-                time = -1;
-                msg = "Long Back";
-              }
-            print(time);
+            String timeMsg = getTimeDifference(int.parse(callLogs[index].callStartTime));
             return Card(
               child: Padding(
                 padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
                 child: ListTile(
                   leading: Icon(
-                      checkCallType(callLogs[index][2]) ? Icons.call_made : Icons.call_received,
-                    color: checkCallType(callLogs[index][2]) ? Colors.red: Colors.blue,
+                      checkCallType(callLogs[index].callType) ? Icons.call_made : Icons.call_received,
+                    color: checkCallType(callLogs[index].callType) ? Colors.red: Colors.blue,
                   ),
                   title: RichText(
                       text:TextSpan(
                           style: TextStyle(color: Colors.black87),
                           children: [
-                            TextSpan(text: callLogs[index][0]),
+                            TextSpan(text: callLogs[index].calleName),
                             TextSpan(text: '\n'),
-                            TextSpan(text: callLogs[index][1]),
+                            TextSpan(text: callLogs[index].calleNumber),
                             TextSpan(text: '\n'),
                             // TextSpan(text: callLogs[index][2]),
                             TextSpan(text: '\n'),
-                            time!=-1 ? TextSpan(text: "$time $msg") : TextSpan(text: "$msg"),
+                            // time!=-1 ? TextSpan(text: "$time $msg") : TextSpan(text: "$msg"),
+                            TextSpan(text: "$timeMsg"),
                             TextSpan(text: ' \u2981 '),
-                            TextSpan(text: "${callLogs[index][4]} mins"),
+                            TextSpan(text: "${callLogs[index].callDuration} mins"),
                           ]
                       )
                   ),
                   trailing: IconButton(
                       onPressed: (){
-                        print('del');
-                        print(callIds[index]);
-                        deleteCallLog(callId : callIds[index]);
+                        deleteCallLog(callId : callLogs[index].callId);
                       },
                       icon:Icon(Icons.delete)
                   ),
