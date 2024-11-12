@@ -51,18 +51,22 @@ class _ClickToCallState extends State<ClickToCall> {
           children: [
             SizedBox(height: 20,),
 
-            Text("+91$enteredContact", style: TextStyle(fontSize: 40),),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text("+91$enteredContact", style: TextStyle(fontSize: 40),),
+            ),
 
             SizedBox(height: 20,),
 
-            Expanded(
-              flex: 4,
+            SizedBox(
+              height: 500,
               child: GridView.builder(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 itemCount: 12,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   mainAxisSpacing:30,
-                  crossAxisSpacing: 30,
+                  crossAxisSpacing: 50,
                 ),
                 itemBuilder: (context, index) {
                   if (index < 9) {

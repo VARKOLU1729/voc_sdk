@@ -17,7 +17,7 @@ class _CallLogsState extends State<CallLogs> {
 
   static const platform = MethodChannel('VOICECALL');
   List<CallLogsModel> callLogs = [];
-  int curTime = 0;
+  int curLargeView = -1;
 
   void getCallLogs() async {
     Map<dynamic, dynamic> x = await platform.invokeMethod('getCallLogs');
@@ -51,31 +51,26 @@ class _CallLogsState extends State<CallLogs> {
     });
   }
 
-
-  void getTime() async
+  String getTime(int epoch)
   {
-    dynamic x = await platform.invokeMethod('getTime');
-    print(x.runtimeType);
-    setState(() {
-      curTime = x;
-    });
+    DateTime callTime = DateTime.fromMillisecondsSinceEpoch(epoch);
+    String time = DateFormat.Hms().format(callTime);
+    return DateFormat('dd-MM-yyyy').format(callTime)+"  \u2981 "+time;
   }
 
   String getTimeDifference(int epoch) {
-    DateTime callTime = DateTime.fromMillisecondsSinceEpoch(epoch); // Convert epoch to DateTime
+    DateTime callTime = DateTime.fromMillisecondsSinceEpoch(epoch);
     DateTime currentTime = DateTime.now();
 
     Duration difference = currentTime.difference(callTime);
 
-    // If the call was today
     if (difference.inDays == 0) {
       if (difference.inHours < 1) {
         return '${difference.inMinutes} mins ago';
       } else {
-        return '${difference.inHours} hours ago';
+        return '${difference.inHours} hr ${difference.inMinutes%60} mins ago';
       }
     } else {
-      // If the call was not today, show the date
       return DateFormat('dd-MM-yyyy').format(callTime);
     }
   }
@@ -93,7 +88,6 @@ class _CallLogsState extends State<CallLogs> {
   void initState() {
     super.initState();
     // getPSTNCallHistory();
-    getTime();
     getCallLogs();
   }
 
@@ -106,38 +100,51 @@ class _CallLogsState extends State<CallLogs> {
           itemBuilder: (context, index)
           {
             String timeMsg = getTimeDifference(int.parse(callLogs[index].callStartTime));
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
-                child: ListTile(
-                  leading: Icon(
-                      checkCallType(callLogs[index].callType) ? Icons.call_made : Icons.call_received,
-                    color: checkCallType(callLogs[index].callType) ? Colors.red: Colors.blue,
-                  ),
-                  title: RichText(
-                      text:TextSpan(
-                          style: TextStyle(color: Colors.black87),
-                          children: [
-                            TextSpan(text: callLogs[index].calleName),
-                            TextSpan(text: '\n'),
-                            TextSpan(text: callLogs[index].calleNumber),
-                            TextSpan(text: '\n'),
-                            // TextSpan(text: callLogs[index][2]),
-                            TextSpan(text: '\n'),
-                            // time!=-1 ? TextSpan(text: "$time $msg") : TextSpan(text: "$msg"),
-                            TextSpan(text: "$timeMsg"),
-                            TextSpan(text: ' \u2981 '),
-                            TextSpan(text: "${callLogs[index].callDuration} mins"),
-                          ]
-                      )
-                  ),
-                  trailing: IconButton(
-                      onPressed: (){
-                        deleteCallLog(callId : callLogs[index].callId);
-                      },
-                      icon:Icon(Icons.delete)
-                  ),
-                )
+            String time = getTime(int.parse(callLogs[index].callStartTime));
+            return InkWell(
+              onTap: (){
+                setState(() {
+                  if(curLargeView==index)
+                    {
+                      curLargeView = -1;
+                    }
+                  else curLargeView = index;
+                });
+              },
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, bottom: 5, top: 5),
+                  child: ListTile(
+                    leading: Icon(
+                        checkCallType(callLogs[index].callType) ? Icons.call_made : Icons.call_received,
+                      color: checkCallType(callLogs[index].callType) ? Colors.red: Colors.blue,
+                    ),
+                    title: RichText(
+                        text:TextSpan(
+                            style: TextStyle(color: Colors.black87, fontSize: 18),
+                            children: [
+                              TextSpan(text: callLogs[index].calleName),
+                              TextSpan(text: '\n'),
+                              TextSpan(text: callLogs[index].calleNumber),
+                              TextSpan(text: '\n'),
+                              TextSpan(text: '\n'),
+                              TextSpan(text: "$timeMsg"),
+                              TextSpan(text: ' \u2981 '),
+                              TextSpan(text: "${callLogs[index].callDuration} mins"),
+                              if(curLargeView==index) TextSpan(text: '\n'),
+                              if(curLargeView==index) TextSpan(text: '\n'),
+                              if(curLargeView==index) TextSpan(text: "$time")
+                            ]
+                        )
+                    ),
+                    trailing: IconButton(
+                        onPressed: (){
+                          deleteCallLog(callId : callLogs[index].callId);
+                        },
+                        icon:Icon(Icons.delete)
+                    ),
+                  )
+                ),
               ),
             );
           }

@@ -1,15 +1,33 @@
-// import 'package:voc_sdk/helpers/web_imports.dart' if (dart.library.html) 'package:voc_sdk/helpers/web_imports.dart';
-
+import 'dart:js_util' as js_util;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:js/js.dart';
 import 'package:flutter/material.dart';
 
-class WebHomeScreen extends StatefulWidget {
-  const WebHomeScreen({super.key});
+@JS()
+external initializeCalmSDK();
 
-  @override
-  State<WebHomeScreen> createState() => _WebHomeScreenState();
+void initVoxSDK() async {
+  if(kIsWeb)
+  {
+    try {
+      var promise = initializeCalmSDK();
+      var qs = await js_util.promiseToFuture(promise);
+      print(qs);
+    } catch (e) {
+      print("Error initializing Calm SDK: $e");
+    }
+  }
+
 }
 
-class _WebHomeScreenState extends State<WebHomeScreen> {
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
 
 
   @override
