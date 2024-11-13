@@ -67,8 +67,8 @@ public class MainActivity extends FlutterActivity{
 //    private String phoneNumber = "abcd";
 //    private String password = "12345";
 
-//    private String caller = "+917901659261";     // caller is who is calling - as per docs it is some did(is ntg but a virtual number) number
-    private String caller = "+917901659282";
+    private String caller = "+917901659261";     // caller is who is calling - as per docs it is some did(is ntg but a virtual number) number
+//    private String caller = "+917901659282";
     private String calle =  "+916301450563";     // calle is to whom you are calling - mobile number
     private String callId = "";    //will obtain from startPstnCall - will set in future
     private String calleName = "Unknown"; //will obtain from dataprovider
@@ -438,31 +438,11 @@ public class MainActivity extends FlutterActivity{
             String curUserS = String.format("Current UserStatus from init %b", curUserStatus);
             Log.i(TAG, curUserS);
 
-//            csClient.activate(phoneNumber, "1234");
-//            csClient.login(phoneNumber, password);
-//
-//            boolean isPSTNRegistered = csClient.registerForPSTNCalls();
-//            Log.i(TAG, "PSTN REGISTERED " + isPSTNRegistered);
-//
-//            boolean setAudioCodec = csCall.setPreferredAudioCodec(CSConstants.PreferredAudioCodec.opus);
-//            Log.i(TAG, "setAudioCodec " + setAudioCodec);
-//
-//            //enable callStats
-//            csCall.enableCallStats(true);
-//            boolean isCallStatsEnabled = csCall.isCallStatsEnabled();
-//            Log.i(TAG, "isCallStatsEnabled : " + isCallStatsEnabled);
-//
-//            csClient.enableNativeContacts(true, 91);
-//            Log.i(TAG, "Is Native Contacts can be read : " + csClient.isnativeContactsCanbeRead());
 
             if(!CSDataProvider.getSignUpstatus())
             {
                 Log.i(TAG, "No SignedUp User");
                 csClient.signUp(phoneNumber, password, false);
-//
-//                //to be removed on signUp success
-//                csClient.login(phoneNumber, password);
-//                new CSCall().startPstnCall("+916301450563", "+917901659282", "HI",new CSLocation(17.4476,78.4491,"Yellamma Temple"));
             }
             else
             {

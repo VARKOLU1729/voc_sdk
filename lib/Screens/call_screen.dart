@@ -15,7 +15,6 @@ class CallScreen extends StatefulWidget {
 }
 
 class _CallScreenState extends State<CallScreen> {
-
   final NativeEventNotifier notifier = NativeEventNotifier();
 
   static const platform = MethodChannel('VOICECALL');
@@ -27,105 +26,96 @@ class _CallScreenState extends State<CallScreen> {
   bool callAnswered = false;
   bool callRinging = false;
 
-  StopWatchTimer timer = StopWatchTimer(
-                    mode: StopWatchMode.countUp
-                  );
+  StopWatchTimer timer = StopWatchTimer(mode: StopWatchMode.countUp);
 
-  void initiateCall() async
-  {
-    String x = await platform.invokeMethod('initiateCall', {'contactNumber' : widget.contactNumber});
+  void initiateCall() async {
+    String x = await platform
+        .invokeMethod('initiateCall', {'contactNumber': widget.contactNumber});
     setState(() {
       calleName = x;
     });
   }
 
-  void endCall() async
-  {
+  void endCall() async {
     await platform.invokeMethod('endCall');
+    Navigator.pop(context);
   }
 
-  void holdCall() async
-  {
+  void holdCall() async {
     setState(() {
       callOnHold = !callOnHold;
       print(callOnHold);
     });
-    await platform.invokeMethod('holdCall', {'onHold':callOnHold});
+    await platform.invokeMethod('holdCall', {'onHold': callOnHold});
   }
 
-  void muteCall() async
-  {
+  void muteCall() async {
     setState(() {
       callOnMute = !callOnMute;
     });
-    await platform.invokeMethod('muteCall', {'onMute':callOnMute});
+    await platform.invokeMethod('muteCall', {'onMute': callOnMute});
   }
 
-  void recordCall() async
-  {
-    await platform.invokeMethod('recordCall', {'isRecording':callRecord});
+  void recordCall() async {
+    await platform.invokeMethod('recordCall', {'isRecording': callRecord});
     setState(() {
       callRecord = !callRecord;
     });
   }
 
-  void toggleLoudSpeaker() async
-  {
-    await platform.invokeMethod('toggleLoudSpeaker', {'onLoud':onLoud});
+  void toggleLoudSpeaker() async {
+    await platform.invokeMethod('toggleLoudSpeaker', {'onLoud': onLoud});
     setState(() {
       onLoud = !onLoud;
     });
-
   }
 
-  void handleNativeEvent() async
-  {
-
-  }
+  // void handleNativeEvent() async
+  // {
+  //
+  // }
 
   @override
-  void initState()
-  {
+  void initState() {
     super.initState();
     initiateCall();
-    notifier.startListening((eventData){
-      if(eventData['callAnswered'])
-        {
+    notifier.startListening((eventData) {
+      switch(eventData.keys.first.toString()) {
+        case "callAnswered":
           setState(() {
             callAnswered = true;
             timer.onStartTimer();
           });
-        }
-      else if(eventData['callRinging'])
-      {
-        setState(() {
-          callRinging = true;
-        });
-      }
-      else if(eventData['callNoAnswer'])
-      {
-        setState(() {
-          timer.onStopTimer();
-          endCall();
-        });
-      }
-      else if(eventData['callEnded'])
-      {
-        setState(() {
-          timer.onStopTimer();
-          endCall();
-        });
-      }
-      else if(eventData['callTerminated'])
-      {
-        setState(() {
-          timer.onStopTimer();
-          endCall();
-        });
+          break;
+        case "callRinging":
+          setState(() {
+            callRinging = true;
+          });
+          break;
+        case "callNoAnswer":
+          setState(() {
+            if (timer.isRunning)
+              timer.onStopTimer();
+            endCall();
+          });
+          break;
+        case "callEnded":
+          setState(() {
+            if (timer.isRunning)
+              timer.onStopTimer();
+            endCall();
+          });
+          break;
+        case "callTerminated":
+          setState(() {
+            if (timer.isRunning)
+              timer.onStopTimer();
+            endCall();
+          });
+          break;
       }
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -136,51 +126,61 @@ class _CallScreenState extends State<CallScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-
-          Spacer(flex: 1,),
+          Spacer(
+            flex: 1,
+          ),
           Container(
             height: 100,
             width: 100,
             // color: Colors.grey,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white
-            ),
+            decoration:
+                BoxDecoration(shape: BoxShape.circle, color: Colors.white),
             child: ClipOval(
-              child: Icon(Icons.person, size: 60,),
+              child: Icon(
+                Icons.person,
+                size: 60,
+              ),
             ),
           ),
-
-          SizedBox(height: 10,),
-
-          Text(calleName, style: TextStyle(color: Colors.white, fontSize: 30),),
-
-          Text(widget.contactNumber, style: TextStyle(color: Colors.white, fontSize: 25),),
-
-          if(!callAnswered && !callRinging)
-            Text("Connecting...", style: TextStyle(color: Colors.white),),
-
-          if(!callAnswered && callRinging)
-            Text("Ringing...", style: TextStyle(color: Colors.white),),
-
-          if(callAnswered)
-          StreamBuilder(
-              stream: timer.rawTime,
-              builder:(context, snapshot)
-              {
-                if(snapshot.hasData)
-                  {
+          SizedBox(
+            height: 10,
+          ),
+          Text(
+            calleName,
+            style: TextStyle(color: Colors.white, fontSize: 30),
+          ),
+          Text(
+            widget.contactNumber,
+            style: TextStyle(color: Colors.white, fontSize: 25),
+          ),
+          if (!callAnswered && !callRinging)
+            Text(
+              "Connecting...",
+              style: TextStyle(color: Colors.white),
+            ),
+          if (!callAnswered && callRinging)
+            Text(
+              "Ringing...",
+              style: TextStyle(color: Colors.white),
+            ),
+          if (callAnswered)
+            StreamBuilder(
+                stream: timer.rawTime,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
                     final val = snapshot.data;
                     final displayTime = StopWatchTimer.getDisplayTime(val!);
-                    
-                    return Text("${displayTime.substring(3,8)}", style: TextStyle(color: Colors.white),);
+
+                    return Text(
+                      "${displayTime.substring(3, 8)}",
+                      style: TextStyle(color: Colors.white),
+                    );
                   }
-                return Text("Timer");
-              }
+                  return Text("Timer");
+                }),
+          Spacer(
+            flex: 3,
           ),
-
-          Spacer(flex: 3,),
-
           Container(
             height: 300,
             decoration: BoxDecoration(
@@ -192,62 +192,88 @@ class _CallScreenState extends State<CallScreen> {
             ),
             child: Column(
               children: [
-                Spacer(flex: 1,),
-
+                Spacer(
+                  flex: 1,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     CircleAvatar(
                       backgroundColor: Color.fromARGB(255, 26, 28, 33),
                       radius: 30,
-                      child: IconButton(onPressed: holdCall,
-                          icon: Icon(callOnHold ? Icons.call_to_action_rounded :Icons.call_to_action_outlined, color: Colors.white,size:30,)
-                      ),
+                      child: IconButton(
+                          onPressed: holdCall,
+                          icon: Icon(
+                            callOnHold
+                                ? Icons.call_to_action_rounded
+                                : Icons.call_to_action_outlined,
+                            color: Colors.white,
+                            size: 30,
+                          )),
                     ),
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Color.fromARGB(255, 26, 28, 33),
-                      child: IconButton(onPressed: recordCall,
-                          icon: Icon(callRecord ? Icons.record_voice_over :Icons.record_voice_over_outlined, color: Colors.white,size: 30,)
-                      ),
+                      child: IconButton(
+                          onPressed: recordCall,
+                          icon: Icon(
+                            callRecord
+                                ? Icons.record_voice_over
+                                : Icons.record_voice_over_outlined,
+                            color: Colors.white,
+                            size: 30,
+                          )),
                     ),
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Color.fromARGB(255, 26, 28, 33),
-                      child: IconButton(onPressed: muteCall,
-                          icon: Icon(callOnMute? Icons.mic_off :Icons.mic, color: Colors.white,size: 30,)
-                      ),
+                      child: IconButton(
+                          onPressed: muteCall,
+                          icon: Icon(
+                            callOnMute ? Icons.mic_off : Icons.mic,
+                            color: Colors.white,
+                            size: 30,
+                          )),
                     ),
-
                     CircleAvatar(
                       radius: 30,
                       backgroundColor: Color.fromARGB(255, 26, 28, 33),
-                      child: IconButton(onPressed: toggleLoudSpeaker,
-                          icon: Icon(onLoud ? Icons.volume_down_sharp :Icons.volume_up_outlined, color: Colors.white,size: 30,)
-                      ),
+                      child: IconButton(
+                          onPressed: toggleLoudSpeaker,
+                          icon: Icon(
+                            onLoud
+                                ? Icons.volume_down_sharp
+                                : Icons.volume_up_outlined,
+                            color: Colors.white,
+                            size: 30,
+                          )),
                     ),
                   ],
                 ),
-
-                Spacer(flex: 2,),
-
+                Spacer(
+                  flex: 2,
+                ),
                 CircleAvatar(
                   backgroundColor: Colors.red, // Background color
                   radius: 40, // Size of the circle
                   child: IconButton(
-                    icon: Icon(Icons.call_end_outlined, color: Colors.black87, size: 40,), // Icon color
+                    icon: Icon(
+                      Icons.call_end_outlined,
+                      color: Colors.black87,
+                      size: 40,
+                    ), // Icon color
                     onPressed: () {
                       endCall();
-                      Navigator.pop(context);
+                      // Navigator.pop(context);
                     },
                   ),
                 ),
-
-                Spacer(flex: 1,)
+                Spacer(
+                  flex: 1,
+                )
               ],
             ),
           ),
-
         ],
       ),
     );
